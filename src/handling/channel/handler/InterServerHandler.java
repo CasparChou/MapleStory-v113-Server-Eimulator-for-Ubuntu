@@ -91,10 +91,16 @@ public class InterServerHandler {
 //        c.getIdleTask().cancel(true);
 //        }
 //        c.updateLoginState(MapleClient.LOGIN_LOGGEDIN, c.getSessionIPAddress());
+        System.out.println("[Loggedin] Initial ");
+
         final ChannelServer channelServer = c.getChannelServer();
         MapleCharacter player;
         final CharacterTransfer transfer = channelServer.getPlayerStorage().getPendingCharacter(playerid);
-
+        try {
+            System.out.println("[Loggedin] CharacterTransfer = " + transfer.channel);
+        } catch (NullPointerException e){
+            System.out.println("[Loggedin] CharacterTransfer = null");
+        }
         if (transfer == null) { // Player isn't in storage, probably isn't CC
             player = MapleCharacter.loadCharFromDB(playerid, c, true);
         } else {
@@ -105,6 +111,8 @@ public class InterServerHandler {
 
         if (!c.CheckIPAddress()) { // Remote hack
             c.getSession().close();
+            System.out.println("[Loggedin] Deny for NULL IP");
+
             return;
         }
 
@@ -118,23 +126,32 @@ public class InterServerHandler {
 		}
 		if (!allowLogin) {
 			c.setPlayer(null);
-			c.getSession().close();
+            System.out.println("[Loggedin] Deny for not allow login, reason is " + state);
+            c.getSession().close();
 			return;
 		}
         c.updateLoginState(MapleClient.LOGIN_LOGGEDIN, c.getSessionIPAddress());
         channelServer.addPlayer(player);
 
+        System.out.println("[ChannelServer] Add player to Channel");
+
+
         c.getSession().write(MaplePacketCreator.getCharInfo(player));
         if (player.isGM()) {
+            System.out.println("[ChannelServer] Welcome GM !");
+
             SkillFactory.getSkill(9001004).getEffect(1).applyTo(player);
         }
         c.getSession().write(MaplePacketCreator.temporaryStats_Reset()); // .
         player.getMap().addPlayer(player);
+        System.out.println("[MapServer] Add player to Map");
+
 
         try {
             player.silentGiveBuffs(PlayerBuffStorage.getBuffsFromStorage(player.getId()));
             player.giveCoolDowns(PlayerBuffStorage.getCooldownsFromStorage(player.getId()));
             player.giveSilentDebuff(PlayerBuffStorage.getDiseaseFromStorage(player.getId()));
+            System.out.println("[Loggedin] pass");
 
             // Start of buddylist
            /* final int buddyIds[] = player.getBuddylist().getBuddyIds();
@@ -172,6 +189,7 @@ public class InterServerHandler {
                 World.Messenger.silentJoinMessenger(messenger.getId(), new MapleMessengerCharacter(c.getPlayer()));
                 World.Messenger.updateMessenger(messenger.getId(), c.getPlayer().getName(), c.getChannel());
             }
+            System.out.println("[Loggedin] getMessenger");
 
             // Start of Guild and alliance
             if(player.getGuildId() <= 0){
@@ -206,6 +224,8 @@ public class InterServerHandler {
             FileoutputUtil.outputFileError(FileoutputUtil.Login_Error, e);
         }
         c.getSession().write(FamilyPacket.getFamilyData());
+        System.out.println("[Loggedin] sendMacros");
+
         player.sendMacros();
         player.showNote();
         player.updatePartyMemberHP();
@@ -213,6 +233,7 @@ public class InterServerHandler {
         player.baseSkills(); //fix people who've lost skills.
 
         c.getSession().write(MaplePacketCreator.getKeymap(player.getKeyLayout()));
+        System.out.println("[Loggedin] getKeyLayout");
 
         for (MapleQuestStatus status : player.getStartedQuests()) {
             if (status.hasMobKills()) {
@@ -230,12 +251,15 @@ public class InterServerHandler {
         }
         player.spawnClones();
         player.spawnSavedPets();
-		
+        System.out.println("[Loggedin] spawnClones");
+
         final HiredFishing fishing = World.hasFishing(player.getAccountID());
         if( fishing != null ){
             player.setPlayerFishing(fishing);
             player.startFishingTask(true,true);
         }
+        System.out.println("[Loggedin] done");
+
     }
 
     public static final void ChangeChannel(final SeekableLittleEndianAccessor slea, final MapleClient c, final MapleCharacter chr) {

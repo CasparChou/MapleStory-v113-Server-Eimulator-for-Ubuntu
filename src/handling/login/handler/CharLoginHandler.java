@@ -153,7 +153,9 @@ public class CharLoginHandler {
         final int channel = slea.readByte() + 1;
 
         c.setWorld(server);
-        //System.out.println("Client " + c.getSession().getRemoteAddress().toString().split(":")[0] + " is connecting to server " + server + " channel " + channel + "");
+        System.out.println("Client " + c.getSession().getRemoteAddress().toString().split(":")[0] + " is connecting to server " + server + " channel " + channel + "");
+        System.out.println("[CharlistRequest] Player set to channel "+channel);
+
         c.setChannel(channel);
 
         final List<MapleCharacter> chars = c.loadCharacters(server);
@@ -322,15 +324,22 @@ public class CharLoginHandler {
     public static final void Character_WithoutSecondPassword(final SeekableLittleEndianAccessor slea, final MapleClient c) {
         final int charId = slea.readInt();
 
-         if (!c.login_Auth(charId)) {
-         c.getSession().close();
-         return;
-         }
-         if (c.getIdleTask() != null) {
-			c.getIdleTask().cancel(true);
-         }
-         c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION, c.getSessionIPAddress());
+        System.out.println("[Character] WithoutSecondPassword" );
+        if (!c.login_Auth(charId)) {
+            System.out.println("[Character] login_Auth not pass" );
+            c.getSession().close();
+            return;
+        }
+        if (c.getIdleTask() != null) {
+            System.out.println("[Character] getIdleTask not null" );
+
+            c.getIdleTask().cancel(true);
+        }
+        c.updateLoginState(MapleClient.LOGIN_SERVER_TRANSITION, c.getSessionIPAddress());
+
         c.getSession().write(MaplePacketCreator.getServerIP(Integer.parseInt(ChannelServer.getInstance(c.getChannel()).getIP().split(":")[1]), charId));
+        System.out.println("[Character] getSession wrote "+ChannelServer.getInstance(c.getChannel()).getIP() );
+
     }
 
     public static final void Character_WithSecondPassword(final SeekableLittleEndianAccessor slea, final MapleClient c) {

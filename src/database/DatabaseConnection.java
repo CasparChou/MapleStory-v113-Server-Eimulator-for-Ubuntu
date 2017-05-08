@@ -102,18 +102,18 @@ public class DatabaseConnection {
             try {
                 Class.forName("com.mysql.jdbc.Driver"); // touch the mysql driver
             } catch (final ClassNotFoundException e) {
-                System.err.println("ERROR" + e);
+                System.err.println("[ERROR] " + e);
             }
             try {
                 Properties props = new Properties();
                 props.put("user", ServerProperties.getProperty("tms.User"));
                 props.put("password", ServerProperties.getProperty("tms.Pass"));
                 props.put("autoReconnect", "true");
-                final Connection con = DriverManager.getConnection(ServerProperties.getProperty("tms.Url"), props);
+                final Connection con = DriverManager.getConnection(ServerProperties.getProperty("tms.Url"), "root", "casparchou0809");
                 allConnections.add(con);
                 return con;
             } catch (SQLException e) {
-                System.err.println("ERROR" + e);
+                System.err.println("[ERROR] " + e);
                 return null;
             }
         }

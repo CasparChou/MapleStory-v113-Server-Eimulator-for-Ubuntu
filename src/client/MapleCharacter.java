@@ -300,9 +300,12 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
     }
 
     public final static MapleCharacter ReconstructChr(final CharacterTransfer ct, final MapleClient client, final boolean isChannel) {
+        System.out.println("[MapleCharacter] Initial");
+
         final MapleCharacter ret = new MapleCharacter(true); // Always true, it's change channel
         ret.client = client;
         if (!isChannel) {
+            System.out.println("[MapleCharacter] Player set to channel " + ct.channel);
             ret.client.setChannel(ct.channel);
         }
         ret.id = ct.characterid;
@@ -364,9 +367,11 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.buddylist = new BuddyList(ct.buddysize);
         ret.subcategory = ct.subcategory;
         ret.prefix = ct.prefix;
-
+        System.out.println("[MapleCharacter] ReconstructChr");
         if (isChannel) {
             final MapleMapFactory mapFactory = ChannelServer.getInstance(client.getChannel()).getMapFactory();
+            System.out.println("[MapleMapFactory] getInstance");
+
             ret.map = mapFactory.getMap(ret.mapid);
             if (ret.map == null) { //char is on a map that doesn't exist warp it to henesys
                 ret.map = mapFactory.getMap(100000000);
@@ -376,11 +381,14 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
                 }
             }
             MaplePortal portal = ret.map.getPortal(ret.initialSpawnPoint);
+            System.out.println("[MaplePortal] getPortal");
+
             if (portal == null) {
                 portal = ret.map.getPortal(0); // char is on a spawnpoint that doesn't exist - select the first spawnpoint instead
                 ret.initialSpawnPoint = 0;
             }
             ret.setPosition(portal.getPosition());
+            System.out.println("[Player] setPosition");
 
             final int messengerid = ct.messengerid;
             if (messengerid > 0) {
@@ -5115,6 +5123,9 @@ public class MapleCharacter extends AbstractAnimatedMapleMapObject implements Se
         ret.acash = acash;
         ret.maplepoints = maplepoints;
         ret.clone = true;
+
+        System.out.println("[CloneLook] Player set to channel " + this.client.getChannel());
+
         ret.client.setChannel(this.client.getChannel());
         while (map.getCharacterById(ret.id) != null || client.getChannelServer().getPlayerStorage().getCharacterById(ret.id) != null) {
             ret.id++;

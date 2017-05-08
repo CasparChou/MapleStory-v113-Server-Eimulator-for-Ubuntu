@@ -342,17 +342,19 @@ public class MapleClient implements Serializable {
 
     /**
      * Returns 0 on success, a state to be used for
-     * {@link MaplePacketCreator#getLoginFailed(int)} otherwise.
+     * {link MaplePacketCreator#getLoginFailed(int)} otherwise.
      *
-     * @param success
+     *  success
      * @return The state of the login.
      */
     public int finishLogin() {
         login_mutex.lock();
+        System.out.println("[Login] finish ?");
         try {
             final byte state = getLoginState();
             if (state > MapleClient.LOGIN_NOTLOGGEDIN && state != MapleClient.LOGIN_WAITING) { // already loggedin
                 loggedIn = false;
+                System.out.println("[Login] return 7");
                 return 7;
             }
             updateLoginState(MapleClient.LOGIN_LOGGEDIN, getSessionIPAddress());
@@ -621,22 +623,32 @@ public class MapleClient implements Serializable {
 
     public final void updateLoginState(final int newstate, final String SessionID) { // TODO hide?
         try {
+            System.out.println("[Character] updateLoginState" );
+
             Connection con = DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement("UPDATE accounts SET loggedin = ?, SessionIP = ?, lastlogin = CURRENT_TIMESTAMP() WHERE id = ?");
             ps.setInt(1, newstate);
             ps.setString(2, SessionID);
             ps.setInt(3, getAccID());
             ps.executeUpdate();
+            System.out.println("[Character] Update loggeding" );
+
             ps.close();
         } catch (SQLException e) {
             System.err.println("error updating login state" + e);
         }
         if (newstate == MapleClient.LOGIN_NOTLOGGEDIN || newstate == MapleClient.LOGIN_WAITING) {
+            System.out.println("[Character] Update loggeding to false cause by state " + newstate );
+
             loggedIn = false;
             serverTransition = false;
         } else {
             serverTransition = (newstate == MapleClient.LOGIN_SERVER_TRANSITION || newstate == MapleClient.CHANGE_CHANNEL);
+
             loggedIn = !serverTransition;
+            System.out.println("[Character] serverTransition = "+serverTransition );
+            System.out.println("[Character] loggedIn = "+loggedIn );
+
         }
     }
 
@@ -673,6 +685,7 @@ public class MapleClient implements Serializable {
     }
 
     public final byte getLoginState() { // TODO hide?
+        System.out.println("[Login] getLoginState");
         Connection con = DatabaseConnection.getConnection();
         try {
             PreparedStatement ps;
@@ -688,6 +701,7 @@ public class MapleClient implements Serializable {
 
             if (state == MapleClient.LOGIN_SERVER_TRANSITION || state == MapleClient.CHANGE_CHANNEL) {
                 if (rs.getTimestamp("lastlogin").getTime() + 20000 < System.currentTimeMillis()) { // connecting to chanserver timeout
+                    System.out.println("[Time] is time out");
                     state = MapleClient.LOGIN_NOTLOGGEDIN;
                     updateLoginState(state, getSessionIPAddress());
                 }
@@ -701,6 +715,8 @@ public class MapleClient implements Serializable {
             }
             return state;
         } catch (SQLException e) {
+            System.out.println("[Err] \"error getting login state\"");
+
             loggedIn = false;
             throw new DatabaseException("error getting login state", e);
         }
@@ -883,7 +899,11 @@ public class MapleClient implements Serializable {
                 }
             }
         }
+        System.out.println("[Disconnect]");
+
         if (!serverTransition && isLoggedIn()) {
+            System.out.println("[Disconnect] updateLoginState");
+
             updateLoginState(MapleClient.LOGIN_NOTLOGGEDIN, getSessionIPAddress());
         }
     }
@@ -1020,6 +1040,7 @@ public class MapleClient implements Serializable {
     }
 
     public final void setChannel(final int channel) {
+        System.out.println("[Channel] Player set to channel "+channel);
         this.channel = channel;
     }
 

@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="TMS113">
+    <output-path>$PROJECT_DIR$/out/artifacts/TMS113</output-path>
+    <root id="archive" name="TMS113.jar">
+      <element id="module-output" name="MapleStory-v113-Server-Eimulator" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/JarLib/mina-core.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/JarLib/slf4j-api.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/JarLib/slf4j-jdk14.jar" path-in-jar="/" />
+      <element id="library" level="project" name="mina-core" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/JarLib/mysql-connector-java-5.1.42-bin.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

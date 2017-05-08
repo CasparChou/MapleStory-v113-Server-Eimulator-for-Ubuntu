@@ -287,6 +287,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
 
         if (channel > -1) {
             if (ChannelServer.getInstance(channel).isShutdown()) {
+                System.out.println("[Channel] Channel is shutting down, close session.");
                 session.close();
                 return;
             }
@@ -297,6 +298,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
             }
         } else {
             if (LoginServer.isShutdown()) {
+                System.out.println("[LoginServer] LoginServer is shutting down, close session.");
                 session.close();
                 return;
             }
@@ -310,6 +312,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 new MapleAESOFB(ivSend, (short) (0xFFFF - ServerConstants.MAPLE_VERSION)), // Sent Cypher
                 new MapleAESOFB(ivRecv, ServerConstants.MAPLE_VERSION), // Recv Cypher
                 session);
+        System.out.println("[SessionOpen] Player set to channel "+channel);
         client.setChannel(channel);
 
         MaplePacketDecoder.DecoderState decoderState = new MaplePacketDecoder.DecoderState();
@@ -325,9 +328,9 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
         if (channel > -1) {
             sb.append("[Channel Server] Channel ").append(channel).append(" : ");
         } else if (cs) {
-            sb.append("[Cash Server]");
+            sb.append("[Cash Server] ");
         } else {
-            sb.append("[Login Server]");
+            sb.append("[Login Server] ");
         }
         sb.append("IoSession opened ").append(address);
         System.out.println(sb.toString());
@@ -352,7 +355,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
     @Override
     public void sessionClosed(final IoSession session) throws Exception {
         final MapleClient client = (MapleClient) session.getAttribute(MapleClient.CLIENT_KEY);
-
+        System.out.println("[Session] Session closed.");
         if (client != null) {
             try {
                 FileWriter fw = isLoggedIP(session);
@@ -409,6 +412,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                     if (Log_Packets) {
                         log(slea, recv, c, session);
                     }
+
                     handlePacket(recv, slea, c, cs);
 
                     //Log after the packet is handle. You'll see why =]
@@ -510,6 +514,7 @@ public class MapleServerHandler extends IoHandlerAdapter implements MapleServerH
                 break;
             case PLAYER_LOGGEDIN:
                 final int playerid = slea.readInt();
+                System.out.println("[Packet] PLAYER_LOGGEDIN ");
                 if (cs) {
                     CashShopOperation.EnterCS(playerid, c);
                 } else {

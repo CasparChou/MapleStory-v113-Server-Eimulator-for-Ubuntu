@@ -26,6 +26,7 @@ import server.quest.MapleQuest;
 public class Start {
 
     public final static void main(final String args[]) {
+        System.out.println("[Initialize] Service preparing ...");
         if (Boolean.parseBoolean(ServerProperties.getProperty("tms.Admin"))) {
             System.out.println("[!!! 管理員模式 !!!]");
         }
@@ -81,7 +82,9 @@ public class Start {
         World.registerRespawn();
         LoginServer.setOn();
         System.out.println("加載完成 :::");
+
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
 		System.gc();
         PingTimer.getInstance().register(System::gc, 1800000);   
     }
